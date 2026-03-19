@@ -111,8 +111,9 @@
   (interactive)
   (let ((exit-code (call-process just-ts-executable nil nil nil "--unstable" "--fmt")))
     (if (eq exit-code 0)
-        (revert-buffer :ignore-auto :noconfirm)
-        (message "Formatted")
+        (progn
+          (revert-buffer :ignore-auto :noconfirm)
+          (message "Formatted"))
       (message "Format failed with exit code %s" exit-code))))
 
 (defconst just-ts-keywords
@@ -235,7 +236,13 @@
 
 ;; from https://www.emacswiki.org/emacs/BackspaceWhitespaceToTabStop
 ;; (which is licensed GPL 2 or later)
-(defvar just-ts-indent-offset 4 "Justfile indentation offset.")
+
+(defcustom just-ts-indent-offset 4
+  "Number of spaces for each indentation step in `just-ts-mode'."
+  :type 'natnum
+  :safe 'natnump
+  :group 'just-ts)
+
 (defun just-ts-backspace-whitespace-to-tab-stop ()
   "Delete whitespace backwards to the next tab-stop, or delete one text char."
   (interactive)
@@ -256,23 +263,23 @@
           (call-interactively #'backward-delete-char))))))
 
 (defun just-ts-indent-in-recipe-body (_node _parent _bol)
-    "Identify if the cursor is in a recipe body.
+  "Identify if the cursor is in a recipe body.
 
 Identify if BOL is at a recipe body start, where PARENT is the file and NODE is
 nil for some reason."
-    (save-excursion
-      (forward-line -1)
-      (let* ((prev-line-node (treesit-node-at (pos-bol)))
-             (prev-line-parent (treesit-node-parent prev-line-node))
-             (prev-line-gp-type (treesit-node-type (treesit-node-parent prev-line-parent)))
-             (prev-line-type (treesit-node-type prev-line-parent)))
-        (or
-         ;; The next line after the header
-         (equal prev-line-type "recipe_header")
-         ;; The next line after a recipe line
-         (equal prev-line-type "recipe_line")
-         ;; The next line after a prefixed line e.g. starting with "@"
-         (equal prev-line-gp-type "recipe_line")))))
+  (save-excursion
+    (forward-line -1)
+    (let* ((prev-line-node (treesit-node-at (pos-bol)))
+           (prev-line-parent (treesit-node-parent prev-line-node))
+           (prev-line-gp-type (treesit-node-type (treesit-node-parent prev-line-parent)))
+           (prev-line-type (treesit-node-type prev-line-parent)))
+      (or
+       ;; The next line after the header
+       (equal prev-line-type "recipe_header")
+       ;; The next line after a recipe line
+       (equal prev-line-type "recipe_line")
+       ;; The next line after a prefixed line e.g. starting with "@"
+       (equal prev-line-gp-type "recipe_line")))))
 
 (defvar just-ts-indent-rules
   `((just
