@@ -12,7 +12,7 @@ This mode provides the following features for editing Justfiles:
 - [x] Basic indentation
 - [x] Formatting via `just-ts-format-buffer`
 - [x] Commenting
-- [ ] imenu
+- [x] imenu
 
 # Installation
 
